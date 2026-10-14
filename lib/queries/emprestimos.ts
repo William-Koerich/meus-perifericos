@@ -218,7 +218,7 @@ export async function buscarItensDisponiveis(q: string) {
     .limit(10);
 }
 
-/** Resumo de itens por id ou tag (para pré-seleção e leitura de QR). */
+/** Resumo de itens por id ou tag (para pré-seleção e leitura pela câmera). */
 export async function obterItensResumo(filtro: { ids?: string[]; tags?: string[] }) {
   const ids = (filtro.ids ?? []).filter(ehUuid).slice(0, 50);
   const tags = (filtro.tags ?? []).map((t) => t.trim().toUpperCase()).slice(0, 50);

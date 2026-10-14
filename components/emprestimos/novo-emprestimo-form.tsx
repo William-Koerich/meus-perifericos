@@ -346,7 +346,7 @@ function CampoPrevisao({ erro }: { erro?: string }) {
   );
 }
 
-/** Ler o QR Code com a câmera ou digitar a tag (ex.: etiqueta danificada). */
+/** Ler o código da etiqueta com a câmera ou digitá-lo (ex.: etiqueta danificada). */
 function AdicionarPorTag({ onTag }: { onTag: (tag: string) => Promise<void> }) {
   const [tag, setTag] = useState("");
   const [buscando, setBuscando] = useState(false);

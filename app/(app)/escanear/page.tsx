@@ -11,7 +11,7 @@ export default async function EscanearPage() {
 
   return (
     <>
-      <PageHeader titulo="Escanear" descricao="Leia o QR Code da etiqueta do equipamento" />
+      <PageHeader titulo="Escanear" descricao="Leia com a câmera o código da etiqueta do equipamento" />
       <ScannerTela />
     </>
   );

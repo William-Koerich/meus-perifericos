@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { BotaoImprimir } from "@/components/itens/botao-imprimir";
-import { QrCode } from "@/components/itens/qr-code";
 import { PageHeader } from "@/components/layout/page-header";
 import { exigirUsuario } from "@/lib/auth";
 import { cn } from "@/lib/utils";
@@ -11,11 +10,15 @@ import { obterItensParaEtiquetas } from "@/lib/queries/itens";
 
 export const metadata: Metadata = { title: "Etiquetas" };
 
+// O código é lido pela câmera (OCR): fonte simples, em negrito e grande
 const TAMANHOS = {
-  pequena: { label: "Pequena (3,5 cm)", etiqueta: "w-[38mm]", qr: "size-[26mm]", texto: "text-[9px]", tag: "text-[11px]" },
-  media: { label: "Média (5 cm)", etiqueta: "w-[52mm]", qr: "size-[38mm]", texto: "text-[10px]", tag: "text-sm" },
-  grande: { label: "Grande (7 cm)", etiqueta: "w-[72mm]", qr: "size-[56mm]", texto: "text-xs", tag: "text-base" },
+  pequena: { label: "Pequena (4 cm)", etiqueta: "w-[40mm]", tag: "text-[5.5mm]", texto: "text-[8px]" },
+  media: { label: "Média (5,5 cm)", etiqueta: "w-[55mm]", tag: "text-[8mm]", texto: "text-[10px]" },
+  grande: { label: "Grande (7,5 cm)", etiqueta: "w-[75mm]", tag: "text-[11mm]", texto: "text-xs" },
 } as const;
+
+// Arial/Helvetica: zero sem barra e letras bem separadas, melhor para o OCR
+const FONTE_CODIGO = { fontFamily: "Arial, Helvetica, sans-serif", letterSpacing: "0.04em" };
 
 type Tamanho = keyof typeof TAMANHOS;
 
@@ -70,6 +73,8 @@ export default async function EtiquetasPage(props: PageProps<"/itens/etiquetas">
         <p className="mb-4 text-xs text-muted-foreground">
           Dica: na janela de impressão, use escala 100% (“tamanho real”) e
           desative cabeçalhos e rodapés. A linha tracejada é a guia de corte.
+          Se for imprimir em outra impressora de etiquetas, use o código em
+          negrito, fonte simples (Arial) e com pelo menos 5 mm de altura.
         </p>
       </div>
 
@@ -79,12 +84,14 @@ export default async function EtiquetasPage(props: PageProps<"/itens/etiquetas">
             <div
               key={item.id}
               className={cn(
-                "flex break-inside-avoid flex-col items-center gap-[1.5mm] border border-dashed border-zinc-400 p-[2.5mm]",
+                "flex break-inside-avoid flex-col items-center gap-[1.5mm] border border-dashed border-zinc-400 px-[3mm] py-[2.5mm]",
                 estilo.etiqueta,
               )}
             >
-              <QrCode valor={item.tag} className={estilo.qr} />
-              <p className={cn("font-mono font-bold leading-none", estilo.tag)}>
+              <p
+                className={cn("font-bold leading-none whitespace-nowrap", estilo.tag)}
+                style={FONTE_CODIGO}
+              >
                 {item.tag}
               </p>
               <p

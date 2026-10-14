@@ -238,7 +238,7 @@ export async function buscarItensDisponiveis(q: string) {
   return buscarItensDisponiveisQuery(String(q ?? "").slice(0, 100));
 }
 
-/** Resolve uma tag lida pelo QR Code (ou digitada) em um item. */
+/** Resolve uma tag lida pela câmera (ou digitada) em um item. */
 export async function obterItemPorTag(tag: string) {
   await exigirUsuario();
   const [item] = await obterItensResumo({ tags: [String(tag ?? "").slice(0, 30)] });

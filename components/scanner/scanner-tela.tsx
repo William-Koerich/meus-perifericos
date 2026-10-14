@@ -13,7 +13,7 @@ import { consultarTag } from "@/lib/actions/emprestimos";
 import { extrairTag } from "@/lib/tag";
 import { cn } from "@/lib/utils";
 
-import { LeitorQr } from "./leitor-qr";
+import { LeitorCodigo } from "./leitor-codigo";
 
 type Resultado =
   | { tipo: "item"; dados: NonNullable<Awaited<ReturnType<typeof consultarTag>>> }
@@ -51,7 +51,7 @@ export function ScannerTela() {
 
   return (
     <div className="space-y-4">
-      <LeitorQr onLeitura={lidoPelaCamera} className="mx-auto max-w-sm" />
+      <LeitorCodigo onLeitura={lidoPelaCamera} className="mx-auto max-w-sm" />
 
       <form
         className="mx-auto flex max-w-sm gap-2"
@@ -67,8 +67,8 @@ export function ScannerTela() {
           <Input
             value={digitado}
             onChange={(e) => setDigitado(e.target.value)}
-            placeholder="Ou digite a tag (IGR-0001)"
-            aria-label="Digitar a tag"
+            placeholder="Ou digite o código (IGR-0001)"
+            aria-label="Digitar o código"
             autoCapitalize="characters"
             className="h-11 pl-9 font-mono"
           />
@@ -98,7 +98,7 @@ export function ScannerTela() {
 
         {!resultado && !consultando && (
           <p className="text-center text-sm text-muted-foreground">
-            Aponte a câmera para a etiqueta do equipamento.
+            Aponte a câmera para o código da etiqueta (ex.: IGR-0001).
           </p>
         )}
       </div>

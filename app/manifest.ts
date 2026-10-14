@@ -23,7 +23,7 @@ export default function manifest(): MetadataRoute.Manifest {
       {
         name: "Escanear",
         short_name: "Escanear",
-        description: "Ler o QR Code de um equipamento",
+        description: "Ler o código da etiqueta de um equipamento",
         url: "/escanear",
         icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }],
       },

@@ -13,7 +13,6 @@ import type { ReactNode } from "react";
 import { AcaoRapida } from "@/components/itens/acao-rapida";
 import { ExcluirItemButton } from "@/components/itens/excluir-item-button";
 import { HistoricoItem } from "@/components/itens/historico-item";
-import { QrCode } from "@/components/itens/qr-code";
 import { StatusBadge } from "@/components/itens/status-badge";
 import { buttonVariants } from "@/components/ui/button";
 import {
@@ -159,9 +158,14 @@ export default async function ItemPage(props: PageProps<"/itens/[id]">) {
         </Card>
 
         <Card className="md:w-56">
-          <CardContent className="flex flex-col items-center gap-2">
-            <QrCode valor={item.tag} className="size-40" />
-            <p className="font-mono text-lg font-semibold">{item.tag}</p>
+          <CardContent className="flex flex-col items-center justify-center gap-1 py-2 text-center">
+            <p className="text-xs text-muted-foreground">Código da etiqueta</p>
+            <p
+              className="text-3xl font-bold tracking-wide"
+              style={{ fontFamily: "Arial, Helvetica, sans-serif" }}
+            >
+              {item.tag}
+            </p>
           </CardContent>
         </Card>
       </div>
