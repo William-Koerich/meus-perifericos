@@ -38,11 +38,20 @@ export async function entrar(
     };
   }
 
-  const [profile] = await db
-    .select({ ativo: profiles.ativo })
-    .from(profiles)
-    .where(eq(profiles.id, data.user.id))
-    .limit(1);
+  let profile: { ativo: boolean } | undefined;
+  try {
+    [profile] = await db
+      .select({ ativo: profiles.ativo })
+      .from(profiles)
+      .where(eq(profiles.id, data.user.id))
+      .limit(1);
+  } catch (error) {
+    console.error("Falha ao consultar o banco no login", error);
+    await supabase.auth.signOut();
+    return {
+      erro: "Não foi possível conectar ao banco de dados. Tente novamente em instantes ou avise o administrador.",
+    };
+  }
 
   if (!profile?.ativo) {
     await supabase.auth.signOut();

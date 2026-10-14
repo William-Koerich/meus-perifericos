@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/proxy";
 
 // Rotas acessíveis sem login
-const ROTAS_PUBLICAS = ["/login", "/auth", "/~offline"];
+const ROTAS_PUBLICAS = ["/login", "/auth", "/~offline", "/api/saude"];
 
 function ehPublica(pathname: string) {
   return ROTAS_PUBLICAS.some(
