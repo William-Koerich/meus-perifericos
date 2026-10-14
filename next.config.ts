@@ -7,6 +7,16 @@ const nextConfig: NextConfig = {
   },
   cacheComponents: true,
   partialPrefetching: true,
+  images: {
+    // Fotos dos itens no bucket público do Supabase Storage
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "*.supabase.co",
+        pathname: "/storage/v1/object/public/periferico-fotos/**",
+      },
+    ],
+  },
   turbopack: {
     rules: {
       "*.css": {
