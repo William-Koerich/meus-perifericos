@@ -1,6 +1,6 @@
 "use server";
 
-import { eq, sql } from "drizzle-orm";
+import { and, eq, inArray, notExists, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -8,7 +8,13 @@ import { z } from "zod";
 import { exigirUsuario } from "@/lib/auth";
 import { BUCKET_FOTOS } from "@/lib/constants";
 import { db, type Tx } from "@/lib/db";
-import { categorias, emprestimoItens, itemFotos, itens } from "@/lib/db/schema";
+import {
+  categorias,
+  emprestimoItens,
+  emprestimos,
+  itemFotos,
+  itens,
+} from "@/lib/db/schema";
 import { ErroNegocio, mensagemDeErro } from "@/lib/erros";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -177,7 +183,7 @@ export async function excluirItem(
   _anterior: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  await exigirUsuario();
+  const usuario = await exigirUsuario();
 
   const id = z.uuid().safeParse(formData.get("id"));
   if (!id.success) return { erro: "Item inválido." };
@@ -185,14 +191,45 @@ export async function excluirItem(
   let fotos: string[] = [];
   try {
     fotos = await db.transaction(async (tx) => {
-      const [comHistorico] = await tx
-        .select({ id: emprestimoItens.id })
-        .from(emprestimoItens)
-        .where(eq(emprestimoItens.itemId, id.data))
-        .limit(1);
-      if (comHistorico) {
+      const [item] = await tx
+        .select({ status: itens.status })
+        .from(itens)
+        .where(eq(itens.id, id.data))
+        .for("update");
+      if (!item) throw new ErroNegocio("Item não encontrado.");
+      if (item.status === "emprestado") {
         throw new ErroNegocio(
-          'Este item tem histórico de empréstimos e não pode ser excluído. Altere o status para "Baixado".',
+          "Este item está emprestado. Registre a devolução antes de excluí-lo.",
+        );
+      }
+
+      // Empréstimos em que o item aparece (histórico)
+      const historico = await tx
+        .select({ emprestimoId: emprestimoItens.emprestimoId })
+        .from(emprestimoItens)
+        .where(eq(emprestimoItens.itemId, id.data));
+
+      if (historico.length) {
+        // Regra: só o admin apaga itens que já foram emprestados (e o histórico deles)
+        if (usuario.perfil !== "admin") {
+          throw new ErroNegocio(
+            'Este item tem histórico de empréstimos. Só um administrador pode excluí-lo; você pode alterar o status para "Baixado".',
+          );
+        }
+        await tx.delete(emprestimoItens).where(eq(emprestimoItens.itemId, id.data));
+
+        // Empréstimos que ficaram sem nenhum item também são apagados
+        const afetados = [...new Set(historico.map((h) => h.emprestimoId))];
+        await tx.delete(emprestimos).where(
+          and(
+            inArray(emprestimos.id, afetados),
+            notExists(
+              tx
+                .select({ id: emprestimoItens.id })
+                .from(emprestimoItens)
+                .where(eq(emprestimoItens.emprestimoId, emprestimos.id)),
+            ),
+          ),
         );
       }
 
@@ -201,11 +238,7 @@ export async function excluirItem(
         .from(itemFotos)
         .where(eq(itemFotos.itemId, id.data));
 
-      const apagados = await tx
-        .delete(itens)
-        .where(eq(itens.id, id.data))
-        .returning({ id: itens.id });
-      if (!apagados.length) throw new ErroNegocio("Item não encontrado.");
+      await tx.delete(itens).where(eq(itens.id, id.data));
 
       return caminhos.map((c) => c.storagePath);
     });
@@ -214,6 +247,9 @@ export async function excluirItem(
   }
 
   await removerArquivos(fotos);
+  revalidatePath("/");
   revalidatePath("/itens");
+  revalidatePath("/emprestimos");
+  revalidatePath("/pessoas");
   redirect("/itens");
 }

@@ -48,7 +48,7 @@ function Info({ label, children }: { label: string; children: ReactNode }) {
 }
 
 export default async function ItemPage(props: PageProps<"/itens/[id]">) {
-  await exigirUsuario();
+  const usuario = await exigirUsuario();
   const { id } = await props.params;
   const item = await obterItem(id);
   if (!item) notFound();
@@ -58,6 +58,10 @@ export default async function ItemPage(props: PageProps<"/itens/[id]">) {
     item.status === "emprestado" ? emprestimoAbertoDoItem(item.id) : null,
   ]);
   const comHistorico = historico.length > 0;
+  // Item nunca emprestado: qualquer usuário exclui. Com histórico: só admin.
+  // Emprestado no momento: ninguém (precisa devolver antes).
+  const podeExcluir =
+    item.status !== "emprestado" && (!comHistorico || usuario.perfil === "admin");
 
   return (
     <div className="space-y-4">
@@ -93,7 +97,9 @@ export default async function ItemPage(props: PageProps<"/itens/[id]">) {
             <PrinterIcon />
             Etiqueta
           </Link>
-          {!comHistorico && <ExcluirItemButton id={item.id} nome={item.nome} />}
+          {podeExcluir && (
+            <ExcluirItemButton id={item.id} nome={item.nome} emprestimos={historico.length} />
+          )}
         </div>
       </div>
 
